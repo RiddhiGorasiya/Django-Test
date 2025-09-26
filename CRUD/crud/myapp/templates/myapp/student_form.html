@@ -1,0 +1,67 @@
+{% extends "myapp/base.html" %} {% block content %}
+<h2>{% if form.instance.pk %} Edit {% else %} Add {% endif %} Student</h2> 
+{% comment %} <h2>Add Student</h2> {% endcomment %}
+<form action="" method="post">
+  {% csrf_token %}
+
+  <div class="mb-3">
+    <label for="{{ form.name.id_for_label }}" class="form-label">
+      {{ form.name.label }}
+    </label>
+    <input
+      type="text"
+      name="{{ form.name.name }}"
+      id="{{ form.name.id_for_label }}"
+      value="{{ form.name.value|default_if_none:'' }}"
+      class="form-control"
+      placeholder="Enter your Name"
+    />
+    {% if form.name.errors %}
+    <div class="text-danger">
+      {% for error in form.name.errors %} {{ error }} {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="mb-3">
+    <label for="{{ form.email.id_for_label }}" class="form-label">
+      {{ form.email.label }}
+    </label>
+    <input
+      type="email"
+      name="{{ form.email.name }}"
+      id="{{ form.email.id_for_label }}"
+      value="{{ form.email.value|default_if_none:'' }}"
+      class="form-control"
+      placeholder="Enter your Email"
+    />
+    {% if form.email.errors %}
+    <div class="text-danger">
+      {% for error in form.email.errors %} {{ error }} {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="mb-3">
+    <label for="{{ form.roll.id_for_label }}" class="form-label">
+      {{ form.roll.label }}
+    </label>
+    <input
+      type="number"
+      name="{{ form.roll.name }}"
+      id="{{ form.roll.id_for_label }}"
+      value="{{ form.roll.value|default_if_none:'' }}"
+      class="form-control"
+      placeholder="Enter your Roll Number"
+    />
+    {% if form.roll.errors %}
+    <div class="text-danger">
+      {% for error in form.roll.errors %} {{ error }} {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  <button type="submit" class="btn btn-primary">submit</button>
+</form>
+<a href="/student/" class="btn btn-secondary mt-3">Back to Home</a>
+{% endblock %}
