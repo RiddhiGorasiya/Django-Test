@@ -1,11 +1,13 @@
 from django.shortcuts import render, HttpResponseRedirect
 from .forms import StudentRegistration
 from .models import User
+from django.contrib import messages
 
 # Create your views here.
 
 # Add and Show Data
 def add_show(request):
+    # messages.add_message(request, messages.SUCCESS, 'New Student Successfully Saved !')
     if request.method == 'POST':
         fm = StudentRegistration(request.POST)
         if fm.is_valid():
@@ -14,6 +16,7 @@ def add_show(request):
             pw = fm.cleaned_data['password']
             reg = User(name=nm, email=em, password=pw)
             reg.save()
+            messages.success(request, 'New Student Successfully Saved !')
             fm = StudentRegistration()
     else:
         fm = StudentRegistration()
