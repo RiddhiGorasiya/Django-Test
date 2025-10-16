@@ -2,6 +2,7 @@ from django.shortcuts import render, HttpResponseRedirect
 from .forms import StudentRegistration
 from .models import User
 from django.contrib import messages
+from django.core.paginator import Paginator
 
 # Create your views here.
 
@@ -21,6 +22,13 @@ def add_show(request):
     else:
         fm = StudentRegistration()
     stud = User.objects.all()
+    # add a pagination 
+    all_post = User.objects.all().order_by('-id')
+    paginator = Paginator(all_post, per_page = 4) # Show 5 contacts per page.
+    page_number = request.GET.get('page')
+    stud = paginator.get_page(page_number)
+    print("Page Number:", page_number)
+    print("Page Object:", stud)
     return render(request, 'myapp/addandshow.html', {'form':fm , 'stu':stud})
 
 # Delete Data

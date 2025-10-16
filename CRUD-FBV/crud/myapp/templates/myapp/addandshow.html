@@ -53,6 +53,55 @@
         {% else %}
             <h4 class="text-center alert alert-warning">No Record</h4>
         {% endif %}
+        {% comment %} add Pagination {% endcomment %}
+        <style>
+            .pagination {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin: 0.1px 0;
+                font-family: Arial, sans-serif;
+            }
+
+            .pagination a, 
+            .pagination span {
+                color: #007bff;
+                text-decoration: none;
+                padding: 8px 14px;
+                margin: 0 4px;
+                {% comment %} border: 1px solid #dee2e6; {% endcomment %}
+                border-radius: 4px;
+                font-size: 14px;
+                transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+            }
+
+            .pagination a:hover {
+                background-color: #007bff;
+                color: white;
+                border-color: #007bff;
+            }
+
+            .pagination .current {
+                background-color: #007bff;
+                color: white;
+                border-color: #007bff;
+                cursor: default;
+            }
+        </style>
+
+        <div class="pagination">
+            <span>
+                {% if stu.has_previous %}
+                    <a href="?page={{stu.previous_page_number}}">Previous</a>
+                {% endif %}
+                <span class="current">
+                    Page {{ stu.number }} of {{ stu.paginator.num_pages }}
+                </span> 
+                {% if stu.has_next %}
+                    <a href="?page={{stu.next_page_number}}">Next</a>
+                {% endif %}
+            </span> 
+        </div>
     </div>
 </div>
 {% endblock content %}
