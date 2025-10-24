@@ -33,6 +33,21 @@
                     </tr>
                 </thead>
                 <tbody>
+                <form method="get" class="mb-3">
+                    <input type="text" name="search" placeholder="Search by name/email" value="{{ search_query }}">
+                    <input type="number" name="id_min" placeholder="Min ID" value="{{ id_min }}">
+                    <input type="number" name="id_max" placeholder="Max ID" value="{{ id_max }}">
+                    <select name="sort">
+                        <option value="id" {% if sort_by == "id" %}selected{% endif %}>ID</option>
+                        <option value="name" {% if sort_by == "name" %}selected{% endif %}>Name</option>
+                        <option value="email" {% if sort_by == "email" %}selected{% endif %}>Email</option>
+                    </select>
+                    <select name="order">
+                        <option value="asc" {% if order == "asc" %}selected{% endif %}>Ascending</option>
+                        <option value="desc" {% if order == "desc" %}selected{% endif %}>Descending</option>
+                    </select>
+                    <button type="submit">Apply</button>
+                </form>
                     {% for st in stu %}
                         <tr>
                             <th scope="row">{{st.id}}</th>
