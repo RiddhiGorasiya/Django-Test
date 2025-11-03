@@ -10,8 +10,11 @@
         <link rel="stylesheet" href="{% static 'myapp/css/bootstrap.css' %}">
     </head>
     <body>
+        <div class="container-fluid bg-dark">
+            {% include 'myapp/navbar.html' %}
+        </div>
         <div class="container mt-5">
-            <h2 class="text-center alert alert-danger">CRUD PROJECT</h2>
+            {% comment %} <h2 class="text-center alert alert-danger">CRUD PROJECT</h2> {% endcomment %}
             {% block content %}{% endblock content %}
         </div>
         <script src="{% static 'myapp/js/jquery.js'%}"></script>

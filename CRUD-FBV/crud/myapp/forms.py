@@ -61,4 +61,4 @@ class StudentRegistration(forms.ModelForm):
     #         self.add_error('email', 'Enter more than or equal 10 char...')
                 
     #     return cleaned_data
-     
+    

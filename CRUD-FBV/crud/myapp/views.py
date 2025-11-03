@@ -7,6 +7,23 @@ from django.db.models import Q
 
 # Create your views here.
 
+# home 
+def home(request):
+    return render(request, 'myapp/home.html')
+
+# # signup view
+# def user_signup(request):
+#     if request.method == 'POST':
+#         form = SignUpForm(request.POST)
+#         if form.is_valid():
+#             messages.success(request, 'Congratulations!! You have become an Author.')
+#             user = form.save()
+#             group = Group.objects.get(name='Author')
+#             user.groups.add(group)
+#     else:
+#         form = SignUpForm()
+#     return render(request, 'myapp/signup.html', {'form':fm})
+
 # Add and Show Data
 def add_show(request):
     # messages.add_message(request, messages.SUCCESS, 'New Student Successfully Saved !')
