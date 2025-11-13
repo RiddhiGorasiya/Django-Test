@@ -1,115 +1,147 @@
-from django.shortcuts import render, HttpResponseRedirect, get_object_or_404, redirect
-from .forms import StudentRegistration
-from .models import User
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User as AuthUser
 from django.core.paginator import Paginator
 from django.db.models import Q
+from .models import User
+from .forms import StudentRegistration
 
-# Create your views here.
-
-# home 
+# HOME
 def home(request):
     return render(request, 'myapp/home.html')
 
-# signup view
+# SIGNUP 
 def user_signup(request):
     if request.method == 'POST':
         name = request.POST.get('name')
-        email = request.POST['email']
-        password1 = request.POST['password1']
-        password2 = request.POST['password2']
+        email = request.POST.get('email')
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        role = request.POST.get('role')
 
-        if password1 != password2:
-            messages.error(request, "Passwords do not match!")
+        if AuthUser.objects.filter(username=username).exists():
+            messages.error(request, "Username already exists.")
             return redirect('signup')
 
-        if User.objects.filter(name=name).exists():
-            messages.error(request, "Username already taken.")
+        # Check Admin dependency
+        if role == "Project Manager" and not User.objects.filter(role='Admin').exists():
+            messages.error(request, "Admin must exist before creating a Project Manager.")
+            return redirect('signup')
+        if role == "Developer" and not User.objects.filter(role='Project Manager').exists():
+            messages.error(request, "Project Manager must exist before creating a Developer.")
             return redirect('signup')
 
-        if User.objects.filter(email=email).exists():
-            messages.error(request, "Email already registered.")
-            return redirect('signup')
+        # Create base AuthUser
+        auth_user = AuthUser.objects.create_user(username=username, email=email, password=password)
+        auth_user.save()
 
-        user = User.objects.create(name=name, email=email, password=password1)
-        user.save()
-        messages.success(request, "Account created successfully! You can now log in.")
+        # Find creator (if logged in)
+        creator = None
+        if request.user.is_authenticated:
+            try:
+                creator = User.objects.get(user=request.user)
+            except:
+                creator = None
+
+        # Create custom role user
+        custom_user = User.objects.create(
+            user=auth_user,
+            name=name,
+            email=email,
+            password=password,
+            role=role,
+            created_by=creator
+        )
+
+        messages.success(request, f"{role} account created successfully!")
         return redirect('login')
+
     return render(request, 'myapp/signup.html')
 
-# login 
+# LOGIN 
 def user_login(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
 
         user = authenticate(username=username, password=password)
+        if user is None:
+            messages.error(request, "Invalid username or password.")
+            return redirect('login')
 
-        if user is not None:
-            login(request, user)
-            messages.success(request, f"Welcome, {user.username}!")
-            return redirect('/')  # redirect to home
-        else:
-            messages.error(request, "Invalid username or password!")
+        # Check hierarchy
+        try:
+            profile = User.objects.get(user=user)
+        except User.DoesNotExist:
+            messages.error(request, "No user profile found.")
+            return redirect('login')
+
+        if profile.role != "Admin":
+            admin_exists = User.objects.filter(role='Admin').exists()
+            if not admin_exists:
+                messages.error(request, "Admin must log in first before others.")
+                return redirect('login')
+
+        login(request, user)
+        messages.success(request, f"Welcome {user.username} !")
+        return redirect('addandshow')
+
     return render(request, 'myapp/login.html')
 
-# logout view
+# LOGOUT
 def user_logout(request):
     logout(request)
     messages.info(request, "You have been logged out.")
-    return HttpResponseRedirect('/')
+    return redirect('login')
 
-# Add and Show Data
+# ADD AND SHOW 
 def add_show(request):
-    # messages.add_message(request, messages.SUCCESS, 'New Student Successfully Saved !')
+    current_user = request.user
+    try:
+        profile = User.objects.get(user=current_user)
+        role = profile.role
+    except:
+        role = None
+        profile = None
+
+    # Create new record
     if request.method == 'POST':
+        if role not in ['Admin', 'Project Manager']:
+            messages.error(request, "You don't have permission to add records.")
+            return redirect('addandshow')
+
         fm = StudentRegistration(request.POST)
         if fm.is_valid():
-            nm = fm.cleaned_data['name']
-            em = fm.cleaned_data['email']
-            pw = fm.cleaned_data['password']
-            reg = User(name=nm, email=em, password=pw)
-            reg.save()
-            messages.success(request, 'New Student Successfully Saved !')
-            fm = StudentRegistration()
+            instance = fm.save(commit=False)
+            instance.created_by = profile
+            instance.user = current_user
+            instance.save()
+            messages.success(request, 'Record added successfully!')
+            return redirect('addandshow')
     else:
-        fm = StudentRegistration()             
+        fm = StudentRegistration()
 
-    # search_query = request.GET.get('search', '').strip()
-    # sort_by = request.GET.get('sort', 'id')
-    # order = request.GET.get('order', 'asc')
-    # id_min = request.GET.get('id_min')
-    # id_max = request.GET.get('id_max')
-    search = request.GET.get('search', '').strip()
-    id_min = request.GET.get('id_min', '').strip()
-    id_max = request.GET.get('id_max', '').strip()
-    sort_field = request.GET.get('sort', 'id').strip()
-    order = request.GET.get('order', 'asc').strip()
-    stud = User.objects.all()
+    # Filtering based on role
+    if role == 'Admin':
+        stud = User.objects.all()
+    elif role == 'Project Manager':
+        stud = User.objects.filter(created_by=profile)
+    elif role == 'Developer':
+        stud = User.objects.filter(user=current_user)
+    else:
+        stud = User.objects.none()
+        
+    # Search, sort, range filter
+    search = request.GET.get('search', '')
+    id_min = request.GET.get('id_min', '')
+    id_max = request.GET.get('id_max', '')
+    sort_field = request.GET.get('sort', 'id')
+    order = request.GET.get('order', 'asc')
 
-    # # # Keyword filter (by name or email)
-    # if search_query:
-    #     stud = stud.filter(Q(name__icontains=search_query) | Q(email__icontains=search_query))
-
-    # # # Range filter (ID range)
-    # if id_min and id_max:
-    #     stud = stud.filter(id__range=(id_min, id_max))
-    # elif id_min:
-    #     stud = stud.filter(id__gte=id_min)
-    # elif id_max:
-    #     stud = stud.filter(id__lte=id_max)
-
-    # # # Sorting logic
-    # if order == 'desc':
-    #     sort_by = f'-{sort_by}'
-    # stud = stud.order_by(sort_by)
-    
-    # Apply text filter
     if search:
         stud = stud.filter(Q(name__icontains=search) | Q(email__icontains=search))
 
-    # Apply ID range
     if id_min and id_max:
         stud = stud.filter(id__range=(id_min, id_max))
     elif id_min:
@@ -117,68 +149,72 @@ def add_show(request):
     elif id_max:
         stud = stud.filter(id__lte=id_max)
 
-    # Sorting 
-    allowed = ['id', 'name', 'email']
+    allowed = ['id', 'name', 'email', 'role']
     if sort_field not in allowed:
         sort_field = 'id'
-    sort_expression = f'-{sort_field}' if order == 'desc' else sort_field
-    stud = stud.order_by(sort_expression)
+    sort_expr = f'-{sort_field}' if order == 'desc' else sort_field
+    stud = stud.order_by(sort_expr)
 
-    # add a pagination 
-    # all_post = User.objects.all().order_by('id')
-    # paginator = Paginator(all_post, per_page = 4) # Show 4 contacts per page.
-    # page_number = request.GET.get('page')
-    # stud = paginator.get_page(page_number)
-    # print("Page Number:", page_number)
-    # print("Page Object:", stud)
-    paginator = Paginator(stud, 3)
-    page = request.GET.get('page')
-    stud = paginator.get_page(page)
-    print("Page Number:", page)
-    print("Page Object:", stud)
+    paginator = Paginator(stud, 5)
+    page_number = request.GET.get('page')
+    stud = paginator.get_page(page_number)
 
-    # Keep querystring for pagination links
     querydict = request.GET.copy()
     querydict.pop('page', None)
     preserved_query = querydict.urlencode()
 
-    # context = {
-    #     'form': fm,
-    #     'stu': stud,
-    #     'search_query': search_query,
-    #     'sort_by': sort_by.lstrip('-'),
-    #     'order': order,
-    #     'id_min': id_min,
-    #     'id_max': id_max,
-    # }
-    context = {
+    return render(request, 'myapp/addandshow.html', {
         'form': fm,
         'stu': stud,
+        'role': role,
         'search': search,
         'id_min': id_min,
         'id_max': id_max,
         'sort_field': sort_field,
         'order': order,
-        'preserved_query': preserved_query,
-    }
-     
-    return render(request, 'myapp/addandshow.html', context)
+        'preserved_query': preserved_query
+    })
 
-# Delete Data
+# DELETE
 def delete_data(request, id):
-    if request.method == 'POST':
-        pi = User.objects.get(pk=id)
-        pi.delete()
-        return HttpResponseRedirect('/')
+    current_user = request.user
+    try:
+        profile = User.objects.get(user=current_user)
+        role = profile.role
+    except:
+        role = None
 
-# Update Data
+    record = get_object_or_404(User, pk=id)
+
+    if role == 'Admin' or (role == 'Project Manager' and record.created_by == profile):
+        record.delete()
+        messages.success(request, "Record deleted successfully.")
+    else:
+        messages.error(request, "Permission denied.")
+    return redirect('addandshow')
+
+# UPDATE
 def update_data(request, id):
+    current_user = request.user
+    profile = User.objects.filter(user=current_user).first()
+    record = get_object_or_404(User, pk=id)
+
+    if profile.role == 'Developer' and record.user != current_user:
+        messages.error(request, "You can only edit your own profile.")
+        return redirect('addandshow')
+
+    if profile.role == 'Project Manager' and record.created_by != profile:
+        messages.error(request, "You can only edit your own developers.")
+        return redirect('addandshow')
+
     if request.method == 'POST':
-        pi = User.objects.get(pk=id)
-        fm = StudentRegistration(request.POST, instance=pi)
+        fm = StudentRegistration(request.POST, instance=record)
         if fm.is_valid():
             fm.save()
+            messages.success(request, "Record updated successfully!")
+            return redirect('addandshow')
     else:
-        pi = User.objects.get(pk=id)
-        fm = StudentRegistration(instance=pi) 
-    return render(request, 'myapp/update.html', {'form':fm})
+        fm = StudentRegistration(instance=record)
+
+    return render(request, 'myapp/update.html', {'form': fm})
+

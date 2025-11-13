@@ -1,13 +1,13 @@
 from django import forms
 from .models import User
-from django.core import validators # built-in-validator import
+# from django.contrib.auth.models import User 
 
 class StudentRegistration(forms.ModelForm):
     # name = forms.CharField(max_length=200) # first prayoti  
     # confirm_password = forms.CharField(max_length=200) # you can also use extra filds note mention in models.py and this data dose not save in database
     class Meta:
         model = User
-        fields = ['name', 'email', 'password']
+        fields = ['name', 'email', 'password', 'role']
         # fields = '__all__' 
         # exclude = ['name'] # if you dont use name. you can use exclude 
         labels = {'name' : 'Enter Name', 'email' : 'Enter Email'}
@@ -20,6 +20,7 @@ class StudentRegistration(forms.ModelForm):
             'name': forms.TextInput(attrs={'class':'form-control', 'placeholder':'Enter your name'}), 
             'email': forms.EmailInput(attrs={'class':'form-control', 'placeholder':'Enter your email'}),
             'password': forms.PasswordInput(render_value=True, attrs={'class':'form-control', 'placeholder':'Enter your password'}),  
+            'role': forms.Select(attrs={'class': 'form-select'}),
         }
         
     # custom validators
@@ -61,4 +62,3 @@ class StudentRegistration(forms.ModelForm):
     #         self.add_error('email', 'Enter more than or equal 10 char...')
                 
     #     return cleaned_data
-    

@@ -1,7 +1,16 @@
-{% extends "myapp/base.html" %} 
-{% load static %} 
+{% extends 'myapp/base.html' %}
+{% block title %}Home{% endblock %}
 {% block content %}
-<div class="container mt-5">
-  <h3 class="text-center alert alert-info">Home Page</h3>
+<div class="container text-center mt-5">
+    <h2>Welcome to the CRUD System</h2>
+    {% if user.is_authenticated %}
+        <p class="mt-3">Go to your <a href="{% url 'addandshow' %}">Dashboard</a></p>
+    {% else %}
+        <p class="mt-3">
+            <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
+            <a href="{% url 'signup' %}" class="btn btn-success">Signup</a>
+        </p>
+    {% endif %}
 </div>
-{% endblock content %}
+{% endblock %}
+

@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+{% comment %} <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <div class="container-fluid">
     <a class="navbar-brand" href="/">CRUD</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -9,22 +9,43 @@
         <li class="nav-item">
           <a class="nav-link active" aria-current="page" href="/">Home</a>
         </li>
-        {% comment %} {% if request.user.is_authenticated %} {% endcomment %}
+        {% if request.user.is_authenticated %}
         <li class="nav-item">
           <a class="nav-link" href="{% url 'addandshow' %}">Dashboard</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="{% url 'logout' %}">Logout</a>
         </li>
-        {% comment %} {% else %} {% endcomment %}
         <li class="nav-item">
           <a class="nav-link" href="{% url 'signup' %}">Signup</a>
         </li>
+        {% else %}
         <li class="nav-item">
           <a class="nav-link" href="{% url 'login' %}">Login</a>
         </li>
-        {% comment %} {% endif %} {% endcomment %}
+        {% endif %}
       </ul>
     </div>
   </div>
-</nav>
+</nav> {% endcomment %}
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'home' %}">CRUD</a>
+        <div class="d-flex">
+            {% if user.is_authenticated %}
+              <span class="navbar-text text-white me-3">
+                Logged in as <b>{{ user.username }}</b>
+              </span>
+              <a href="{% url 'logout' %}" class="btn btn-outline-light btn-sm me-2">Logout</a>
+              <a href="{% url 'login' %}" class="btn btn-outline-light btn-sm me-2">Login</a>
+              <a href="{% url 'signup' %}" class="btn btn-outline-light btn-sm me-2">Signup</a>
+              <a href="{% url 'addandshow' %}" class="btn btn-outline-light btn-sm me-2">Dashboard</a>
+            {% else %}
+                <a href="/" class="btn btn-outline-light btn-sm me-2">Home</a>
+                <a href="{% url 'login' %}" class="btn btn-outline-light btn-sm me-2">Login</a>
+                <a href="{% url 'signup' %}" class="btn btn-outline-light btn-sm">Signup</a>
+            {% endif %}
+        </div>
+    </div>
+</nav> 

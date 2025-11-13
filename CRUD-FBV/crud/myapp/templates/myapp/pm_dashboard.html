@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Project Manager Dashboard</title>
+</head>
+<body>
+    <h2>Welcome, {{ pm_name }} </h2>
+    <h3>Your Developers</h3>
+
+    {% if developers %}
+        <table border="1" cellpadding="8">
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Actions</th>
+            </tr>
+            {% for dev in developers %}
+                <tr>
+                    <td>{{ dev.id }}</td>
+                    <td>{{ dev.name }}</td>
+                    <td>{{ dev.email }}</td>
+                    <td>{{ dev.role }}</td>
+                    <td>
+                        <a href="{% url 'update_data' dev.id %}">Edit</a> |
+                        <form action="{% url 'delete_data' dev.id %}" method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" onclick="return confirm('Delete this developer?')">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No developers have been added yet.</p>
+    {% endif %}
+
+    <br><br>
+    <a href="{% url 'add_show' %}">Add New Developer</a><br>
+    <a href="{% url 'logout' %}">Logout</a>
+</body>
+</html>

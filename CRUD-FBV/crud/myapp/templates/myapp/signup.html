@@ -1,37 +1,46 @@
-{% extends "myapp/base.html" %}
+{% extends 'myapp/base.html' %}
+{% block title %}Signup{% endblock %}
 {% block content %}
-<div class="container mt-5 col-md-6">
-  <h3 class="text-center alert alert-info">Sign Up</h3>
+<div class="container mt-5">
+    <div class="col-md-6 mx-auto">
+        <div class="card shadow p-4">
+            <h3 class="text-center mb-4">Create Account</h3>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" name="name" class="form-control" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" class="form-control" required>
+                    </div>
+                </div>
 
-  {% if messages %}
-    {% for message in messages %}
-      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-    {% endfor %}
-  {% endif %}
+                <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    <input type="text" name="username" class="form-control" required>
+                </div>
 
-  <form method="post">
-    {% csrf_token %}
-    <div class="mb-3">
-      <label>Username</label>
-      <input type="text" name="name" class="form-control" required>
-    </div>
-    <div class="mb-3">
-      <label>Email</label>
-      <input type="email" name="email" class="form-control" required>
-    </div>
-    <div class="mb-3">
-      <label>Password</label>
-      <input type="password" name="password1" class="form-control" required>
-    </div>
-    <div class="mb-3">
-      <label>Confirm Password</label>
-      <input type="password" name="password2" class="form-control" required>
-    </div>
-    <button type="submit" class="btn btn-primary w-100">Sign Up</button>
-  </form>
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="form-control" required>
+                </div>
 
-  <p class="text-center mt-3">Already have an account?
-    <a href="{% url 'login' %}">Login</a>
-  </p>
+                <div class="mb-3">
+                    <label class="form-label">Role</label>
+                    <select name="role" class="form-select" required>
+                        <option value="">-- Select Role --</option>
+                        <option value="Admin">Admin</option>
+                        <option value="Project Manager">Project Manager</option>
+                        <option value="Developer">Developer</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-success w-100">Create Account</button>
+            </form>
+        </div>
+    </div>
 </div>
 {% endblock %}
