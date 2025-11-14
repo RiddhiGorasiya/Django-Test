@@ -72,7 +72,7 @@ def user_login(request):
 
         # Check hierarchy
         try:
-            profile = User.objects.get(user=user)
+            profile = User.objects.filter(user=user).first()
         except User.DoesNotExist:
             messages.error(request, "No user profile found.")
             return redirect('login')
@@ -218,3 +218,13 @@ def update_data(request, id):
 
     return render(request, 'myapp/update.html', {'form': fm})
 
+# IMAGE UPLOAD
+def image_view(request):
+    if request.method == 'POST':
+        form = StudentRegistration(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('addandshow')  
+    else:
+        form = StudentRegistration()  
+    return render(request, 'myapp/image_form.html', {'form': form})        

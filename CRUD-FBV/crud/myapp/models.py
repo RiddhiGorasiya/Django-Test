@@ -14,6 +14,7 @@ class User(models.Model):
     password = models.CharField(max_length=100)
     role = models.CharField(max_length=50, choices=ROLE_CHOICES, default='Developer')
     created_by = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='created_users')
+    profile_image = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
 
     def __str__(self):
         return f"{self.name} ({self.role})"

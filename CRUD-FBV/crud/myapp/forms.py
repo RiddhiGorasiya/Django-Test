@@ -7,7 +7,7 @@ class StudentRegistration(forms.ModelForm):
     # confirm_password = forms.CharField(max_length=200) # you can also use extra filds note mention in models.py and this data dose not save in database
     class Meta:
         model = User
-        fields = ['name', 'email', 'password', 'role']
+        fields = ['name', 'email', 'password', 'role', 'profile_image']
         # fields = '__all__' 
         # exclude = ['name'] # if you dont use name. you can use exclude 
         labels = {'name' : 'Enter Name', 'email' : 'Enter Email'}

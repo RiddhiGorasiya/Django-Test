@@ -1,0 +1,33 @@
+{% extends 'myapp/base.html' %}
+{% block content %}
+<div class="container mt-4">
+  <h2>My TODO List</h2>
+  <a href="{% url 'todo_create' %}" class="btn btn-primary mb-3">+ Add Task</a>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Description</th>
+        <th>Status</th>
+        {% comment %} <th>Image</th> {% endcomment %}
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for todo in todos %}
+      <tr>
+        <td>{{ todo.title }}</td>
+        <td>{{ todo.description }}</td>
+        <td>{{ todo.is_completed|yesno:"YES,NO" }}</td>
+        <td>
+          <a href="{% url 'todo_update' todo.id %}" class="btn btn-warning btn-sm">Edit</a>
+          <a href="{% url 'todo_delete' todo.id %}" class="btn btn-danger btn-sm">Delete</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4" class="text-center">No tasks yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

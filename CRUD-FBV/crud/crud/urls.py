@@ -15,17 +15,22 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path , include
 from myapp import views
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.home, name='home'),
-    path('show/', views.add_show, name="addandshow"),
-    path('signup/', views.user_signup, name='signup'),
-    path('login/', views.user_login, name='login'),
-    path('logout/', views.user_logout, name='logout'),
-    path('delete/<int:id>', views.delete_data, name="deletedata"),
-    path('update/<int:id>', views.update_data, name="updatedata"),
+    # path('', views.home, name='home'),
+    # path('show/', views.add_show, name="addandshow"),
+    # path('signup/', views.user_signup, name='signup'),
+    # path('login/', views.user_login, name='login'),
+    # path('logout/', views.user_logout, name='logout'),
+    # path('delete/<int:id>', views.delete_data, name="deletedata"),
+    # path('update/<int:id>', views.update_data, name="updatedata"),
     # path('pm-dashboard/', views.pm_dashboard, name='pm_dashboard'),
-]
+    path('todo/', include('todo.urls')),
+    path('', include('myapp.urls')),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
