@@ -7,13 +7,47 @@
     <!-- Filter + Range Form -->
     <form method="GET" class="row mb-4">
         <div class="col-md-3">
-            <input type="text" name="search" class="form-control" placeholder="Search by name/email" value="{{ search }}">
+            <input type="text" id="nameFilter" name="search" class="form-control" placeholder="Search by name/email" value="{{ search }}">
+            {% comment %} <script>
+                $(document).ready(function() {
+                    var table = $('#myTable').DataTable();
+
+                    $('#nameFilter').on('keyup', function() {
+                        table.column(1).search(this.value).draw();
+                    });
+                });
+            </script> {% endcomment %}
         </div>
         <div class="col-md-2">
-            <input type="number" name="id_min" class="form-control" placeholder="Min ID" value="{{ id_min }}">
+            <input type="number" id="min" name="id_min" class="form-control" placeholder="Min ID" value="{{ id_min }}">
+            {% comment %} <script>
+                $(document).ready(function() {
+                    var table = $('#myTable').DataTable();
+
+                    $.fn.dataTable.ext.search.push(
+                        function(settings, data, dataIndex) {
+                            var min = parseInt($('#min').val(), 10);
+                            var max = parseInt($('#max').val(), 10);
+                            var value = parseFloat(data[3]) || 0; // column index
+
+                            if ((isNaN(min) && isNaN(max)) ||
+                                (isNaN(min) && value <= max) ||
+                                (min <= value   && isNaN(max)) ||
+                                (min <= value   && value <= max)) {
+                                return true;
+                            }
+                            return false;
+                        }
+                    );
+
+                    $('#min, #max').keyup(function() {
+                        table.draw();
+                    });
+                });
+            </script> {% endcomment %}
         </div>
         <div class="col-md-2">
-            <input type="number" name="id_max" class="form-control" placeholder="Max ID" value="{{ id_max }}">
+            <input type="number"  id="max" name="id_max" class="form-control" placeholder="Max ID" value="{{ id_max }}">
         </div>
         <div class="col-md-3">
             <select name="sort" class="form-select">
@@ -31,23 +65,37 @@
         </div>
         <div class="col-md-12 mt-3">
             <button class="btn btn-outline-primary">Apply</button>
-        </div>
+        </div> 
     </form>
 
     {% if role in "Admin Project Manager" %}
-    <div class="card p-3 mb-4">
+    <div class="card p-3 mb-4" >
         <h5>Add New User</h5>
-        <form method="POST">
+        <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
             {{ form.as_p }}
-            <button class="btn btn-success">Add User</button>
+            <div class="form-group">
+                {{ form.profile_pics.label_tag }}
+                {{ form.profile_pics }}
+                {% if form.instance.profile_pics %}
+            <div>
+        <img src="{{ form.instance.profile_pics.url }}" width="80" height="80" />
+      </div>
+    {% endif %}
+    </div>
+            <button type="submit" class="btn btn-success">Add User</button>
         </form>
     </div>
     {% endif %}
-
+    
     <div class="card shadow p-3">
         <h5>User List</h5>
-        <table class="table table-bordered table-hover">
+        <table id="myTable" class="table table-bordered table-hover">
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/1.11.1/js/dataTables.bootstrap4.min.js" type="text/javascript"></script>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.css" rel="stylesheet">
+        <link href="https://cdn.datatables.net/1.11.1/css/dataTables.bootstrap4.min.css" rel="stylesheet">
             <thead class="table-dark">
                 <tr>
                     <th>ID</th>
@@ -68,7 +116,15 @@
                     <td>{{ st.name }}</td>
                     <td>{{ st.email }}</td>
                     <td>{{ st.password }}</td>
-                    <td>{{ st.image }}</td>
+                    <td>
+                        {% if st.profile_image %}
+                            <img src="{{ st.image_form.url }}" 
+                            style="height:55px; width:55px; object-fit:cover; cursor:pointer; border-radius:6px;"
+                            onclick="openImageModal('{{ st.image_form.url }}')">
+                        {% else %}
+                            No Image
+                        {% endif %}
+                    </td>
                     <td>{{ st.role }}</td>
                     {% comment %} {% if role != "Developer" %} {% endcomment %}
                     <td>
@@ -110,6 +166,46 @@
             </ul>
         </nav>
     </div>
+    {% comment %} <!-- IMAGE ZOOM MODAL -->
+    <div id="imageModal" style="
+        display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+        background:rgba(0,0,0,0.8); justify-content:center; align-items:center;
+        z-index:9999;">
+        
+        <span onclick="closeImageModal()" 
+            style="position:absolute; top:20px; right:40px; color:white; font-size:40px; cursor:pointer;">
+            &times;
+        </span>
+
+        <img id="modalImage" style="max-width:80%; max-height:80%; border-radius:10px;">
+    </div>
+
+    <script>
+    function openImageModal(url) {
+        document.getElementById("modalImage").src = url;
+        document.getElementById("imageModal").style.display = "flex";
+    }
+    function closeImageModal() {
+        document.getElementById("imageModal").style.display = "none";
+    }
+    </script> {% endcomment %}
+    <script>
+    $(document).ready(function() {
+        $('#myTable').DataTable({
+            "pageLength": 10,
+            "ordering": true,
+            "searching": true,
+            "pagination": true
+        });
+    });
+    </script>
+    {% comment %} <script>
+        $(document).ready(function() {
+        $('#myTable').DataTable();
+        });
+    </script> {% endcomment %}
+
+
 </div>
 {% endblock %}
 

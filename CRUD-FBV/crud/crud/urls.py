@@ -32,5 +32,7 @@ urlpatterns = [
     # path('pm-dashboard/', views.pm_dashboard, name='pm_dashboard'),
     path('todo/', include('todo.urls')),
     path('', include('myapp.urls')),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+] #+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

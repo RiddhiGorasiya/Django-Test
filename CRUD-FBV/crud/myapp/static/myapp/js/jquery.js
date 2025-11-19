@@ -10714,3 +10714,28 @@ if ( typeof noGlobal === "undefined" ) {
 
 return jQuery;
 } );
+
+// function eventFired(type) {
+//     let n = document.querySelector('#userTable');
+//     n.innerHTML +=
+//         '<div>' + type + ' event - ' + new Date().getTime() + '</div>';
+//     n.scrollTop = n.scrollHeight;
+// }
+ 
+let table = new DataTable('#userTable');
+ 
+table.on('click', 'tbody tr', function () {
+    let data = table.row(this).data();
+ 
+    alert('You clicked on ' + data[0] + "'s row");
+});
+// // Adding events during initialisation
+// let table = new DataTable('#userTable', {
+//     on: {
+//         order: () => eventFired('Order'),
+//         search: () => eventFired('search')
+//     }
+// });
+ 
+// // Adding event using API
+// table.on('page', () => eventFired('Page'));

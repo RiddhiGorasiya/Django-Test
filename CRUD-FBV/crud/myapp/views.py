@@ -6,6 +6,8 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from .models import User
 from .forms import StudentRegistration
+from django.http import JsonResponse
+
 
 # HOME
 def home(request):
@@ -111,13 +113,13 @@ def add_show(request):
             messages.error(request, "You don't have permission to add records.")
             return redirect('addandshow')
 
-        fm = StudentRegistration(request.POST)
+        fm = StudentRegistration(request.POST, request.FILES)
         if fm.is_valid():
-            instance = fm.save(commit=False)
+            instance = fm.save(commit=True)
             instance.created_by = profile
             instance.user = current_user
             instance.save()
-            messages.success(request, 'Record added successfully!')
+            messages.success(request, "Record added successfully!")
             return redirect('addandshow')
     else:
         fm = StudentRegistration()
@@ -130,7 +132,7 @@ def add_show(request):
     elif role == 'Developer':
         stud = User.objects.filter(user=current_user)
     else:
-        stud = User.objects.none()
+        stud = User.objects.all().order_by('-id') 
         
     # Search, sort, range filter
     search = request.GET.get('search', '')
@@ -208,7 +210,7 @@ def update_data(request, id):
         return redirect('addandshow')
 
     if request.method == 'POST':
-        fm = StudentRegistration(request.POST, instance=record)
+        fm = StudentRegistration(request.POST, request.FILES, instance=record)
         if fm.is_valid():
             fm.save()
             messages.success(request, "Record updated successfully!")
@@ -224,7 +226,7 @@ def image_view(request):
         form = StudentRegistration(request.POST, request.FILES)
         if form.is_valid():
             form.save()
-            return redirect('addandshow')  
+            return redirect('image_form')  
     else:
         form = StudentRegistration()  
     return render(request, 'myapp/image_form.html', {'form': form})        
